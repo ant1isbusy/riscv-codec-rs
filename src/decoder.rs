@@ -13,7 +13,6 @@ pub fn decode(instr: u32) -> Result<String> {
     let decoded = match opcode {
         0b0110011 => {
             // R-type
-
             match (funct3, funct7) {
                 (0x0, 0x00) => format!("add x{}, x{}, x{}", rd, rs1, rs2),
                 (0x0, 0x20) => format!("sub x{}, x{}, x{}", rd, rs1, rs2),
@@ -55,7 +54,6 @@ pub fn decode(instr: u32) -> Result<String> {
         }
         0b0000011 => {
             // I-type LOAD
-
             match funct3 {
                 0x0 => format!("lb x{}, {}(x{})", rd, imm_i, rs1),
                 0x1 => format!("lh x{}, {}(x{})", rd, imm_i, rs1),

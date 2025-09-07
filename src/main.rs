@@ -1,52 +1,47 @@
+use std::io::{self, Write};
+
+mod decoder;
+mod encoder;
 mod error;
 mod util;
-use crate::error::{Error, Result}; // <-- Import Error
-use util::decode;
 
-fn main() -> () {
-    // read args
-    let args: Vec<String> = std::env::args().collect();
-    if args.len() != 2 {
-        eprintln!("Usage: {} <hexword>", args[0]);
-        std::process::exit(1);
-    }
+fn main() {
+    let mut input = String::new();
 
-    let input = &args[1];
-    // try and parse the instruction either 0x.. or "addi ..."
-    match try_parse_hexword(input) {
-        Ok(hex) => {
-            // decode instruction
-            match decode(hex) {
-                Ok(instr) => println!("{}", instr),
-                Err(e) => {
-                    match e {
-                        Error::InvalidOpcode(op) => eprintln!("Invalid opcode: 0x{:02x}", op),
-                        Error::UnknownInstruction(instr) => {
-                            eprintln!("Unknown instruction: 0x{:08x}", instr)
-                        }
-                        Error::Other => eprintln!("Other error"),
+    loop {
+        print!("Enter instruction or hex (or 'exit' to quit): ");
+        io::stdout().flush().unwrap();
+
+        input.clear();
+        io::stdin()
+            .read_line(&mut input)
+            .expect("Failed to read line");
+
+        let input = input.trim();
+        if input.eq_ignore_ascii_case("exit")
+            || input.eq_ignore_ascii_case("q")
+            || input.eq_ignore_ascii_case("quit")
+        {
+            break;
+        }
+
+        let maybe_hex = input
+            .strip_prefix("0x")
+            .or_else(|| input.strip_prefix("0X"));
+        if let Some(hex) = maybe_hex {
+            if hex.chars().all(|c| c.is_ascii_hexdigit()) && hex.len() <= 8 {
+                match u32::from_str_radix(hex, 16) {
+                    Ok(word) => {
+                        println!("Decoded: {}", decoder::decode(word).unwrap());
+                        continue;
                     }
-                    std::process::exit(1);
+                    Err(_) => {
+                        eprintln!("Invalid hex input");
+                        continue;
+                    }
                 }
             }
         }
-        Err(_) => {
-            // not a hex, try to parse as string instruction
-            eprintln!("TODO: parse string instruction: {}", input);
-        }
-    }
-}
 
-fn try_parse_hexword(s: &str) -> Result<u32> {
-    let s = s.trim();
-    let s = if s.starts_with("0x") || s.starts_with("0X") {
-        &s[2..]
-    } else {
-        s
-    };
-    if s.len() == 8 && s.chars().all(|c| c.is_ascii_hexdigit()) {
-        u32::from_str_radix(s, 16).map_err(|_| Error::Other)
-    } else {
-        Err(Error::Other)
     }
 }
