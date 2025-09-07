@@ -24,7 +24,7 @@ pub fn decode(instr: u32) -> Result<String> {
                 (0x5, 0x20) => format!("sra x{}, x{}, x{}", rd, rs1, rs2),
                 (0x2, 0x00) => format!("slt x{}, x{}, x{}", rd, rs1, rs2),
                 (0x3, 0x00) => format!("sltu x{}, x{}, x{}", rd, rs1, rs2),
-                _ => return Err(Error::UnknownInstruction(instr)),
+                _ => return Err(Error::UnknownInstruction),
             }
         }
         0b0010011 => {
@@ -44,12 +44,12 @@ pub fn decode(instr: u32) -> Result<String> {
                     match funct7 {
                         0x00 => format!("srli x{}, x{}, {}", rd, rs1, shamt),
                         0x20 => format!("srai x{}, x{}, {}", rd, rs1, shamt),
-                        _ => return Err(Error::UnknownInstruction(instr)),
+                        _ => return Err(Error::UnknownInstruction),
                     }
                 }
                 0x2 => format!("slti x{}, x{}, {}", rd, rs1, imm_i),
                 0x3 => format!("sltiu x{}, x{}, {}", rd, rs1, imm_i),
-                _ => return Err(Error::UnknownInstruction(instr)),
+                _ => return Err(Error::UnknownInstruction),
             }
         }
         0b0000011 => {
@@ -60,7 +60,7 @@ pub fn decode(instr: u32) -> Result<String> {
                 0x2 => format!("lw x{}, {}(x{})", rd, imm_i, rs1),
                 0x4 => format!("lbu x{}, {}(x{})", rd, imm_i, rs1),
                 0x5 => format!("lhu x{}, {}(x{})", rd, imm_i, rs1),
-                _ => return Err(Error::UnknownInstruction(instr)),
+                _ => return Err(Error::UnknownInstruction),
             }
         }
         0b0100011 => {
@@ -75,7 +75,7 @@ pub fn decode(instr: u32) -> Result<String> {
                 0x0 => format!("sb x{}, {}(x{})", rs2, imm_s, rs1),
                 0x1 => format!("sh x{}, {}(x{})", rs2, imm_s, rs1),
                 0x2 => format!("sw x{}, {}(x{})", rs2, imm_s, rs1),
-                _ => return Err(Error::UnknownInstruction(instr)),
+                _ => return Err(Error::UnknownInstruction),
             }
         }
         0b1100011 => {
@@ -97,7 +97,7 @@ pub fn decode(instr: u32) -> Result<String> {
                 0x5 => format!("bge x{}, x{}, {}", rs1, rs2, imm_b),
                 0x6 => format!("bltu x{}, x{}, {}", rs1, rs2, imm_b),
                 0x7 => format!("bgeu x{}, x{}, {}", rs1, rs2, imm_b),
-                _ => return Err(Error::UnknownInstruction(instr)),
+                _ => return Err(Error::UnknownInstruction),
             }
         }
         0b1101111 => {
@@ -120,7 +120,7 @@ pub fn decode(instr: u32) -> Result<String> {
             if funct3 == 0x0 {
                 format!("jalr x{}, {}(x{})", rd, imm_i, rs1)
             } else {
-                return Err(Error::UnknownInstruction(instr));
+                return Err(Error::UnknownInstruction);
             }
         }
         0b0110111 => {
@@ -146,10 +146,10 @@ pub fn decode(instr: u32) -> Result<String> {
                 (0x5, _) => format!("csrrwi x{}, {}, {}", rd, csr, zimm),
                 (0x6, _) => format!("csrrsi x{}, {}, {}", rd, csr, zimm),
                 (0x7, _) => format!("csrrci x{}, {}, {}", rd, csr, zimm),
-                _ => return Err(Error::UnknownInstruction(instr)),
+                _ => return Err(Error::UnknownInstruction),
             }
         }
-        _ => return Err(Error::InvalidOpcode(opcode)),
+        _ => return Err(Error::InvalidOpcode),
     };
 
     Ok(decoded)

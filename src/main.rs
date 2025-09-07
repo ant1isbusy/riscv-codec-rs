@@ -3,7 +3,6 @@ use std::io::{self, Write};
 mod decoder;
 mod encoder;
 mod error;
-mod util;
 
 fn main() {
     let mut input = String::new();
@@ -41,7 +40,11 @@ fn main() {
                     }
                 }
             }
+        } else {
+            match encoder::encode(input) {
+                Ok(word) => println!("Encoded: 0x{:08x}", word),
+                Err(e) => eprintln!("Error: {:?}", e),
+            }
         }
-
     }
 }
