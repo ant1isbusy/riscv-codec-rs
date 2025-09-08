@@ -6,5 +6,7 @@ pub enum Error {
     UnknownInstruction,
     InvalidFormat,
     InvalidRegister,
+    ImmediateOutOfRange,
+    InvalidImmediate,
     Other,
 }
