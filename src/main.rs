@@ -41,10 +41,10 @@ fn main() {
                 }
             }
         } else {
-            match encoder::encode(input) {
+            /* match encoder::encode(input) {
                 Ok(word) => println!("Encoded: 0x{:08x}", word),
                 Err(e) => eprintln!("Error: {:?}", e),
-            }
+            } */
         }
     }
 }
