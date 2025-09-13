@@ -3,6 +3,7 @@ use std::io::{self, Write};
 mod decoder;
 mod encoder;
 mod error;
+mod util;
 
 fn main() {
     let mut input = String::new();
@@ -24,27 +25,19 @@ fn main() {
             break;
         }
 
-        let maybe_hex = input
-            .strip_prefix("0x")
-            .or_else(|| input.strip_prefix("0X"));
-        if let Some(hex) = maybe_hex {
-            if hex.chars().all(|c| c.is_ascii_hexdigit()) && hex.len() <= 8 {
-                match u32::from_str_radix(hex, 16) {
-                    Ok(word) => {
-                        println!("Decoded: {}", decoder::decode(word).unwrap());
-                        continue;
-                    }
-                    Err(_) => {
-                        eprintln!("Invalid hex input");
-                        continue;
-                    }
-                }
+        if util::is_hex(input) {
+            match u32::from_str_radix(&input[2..], 16) {
+                Ok(hex) => match decoder::decode(hex) {
+                    Ok(instr) => println!("DEC: {:?}", instr),
+                    Err(e) => println!("Error decoding instruction: {:?}", e),
+                },
+                Err(e) => println!("Error parsing hex input: {}", e),
             }
         } else {
-            /* match encoder::encode(input) {
-                Ok(word) => println!("Encoded: 0x{:08x}", word),
-                Err(e) => eprintln!("Error: {:?}", e),
-            } */
+            match encoder::encode(input) {
+                Ok(instr) => println!("ENC: {:?}", instr),
+                Err(e) => println!("Error encoding instruction: {:?}", e),
+            }
         }
     }
 }

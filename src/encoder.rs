@@ -1,6 +1,8 @@
 use crate::error::{Error, Result};
 use bitfield::bitfield;
 
+use crate::util;
+
 #[derive(Debug)]
 pub enum Instruction {
     RType(RType),
@@ -82,14 +84,6 @@ bitfield! {
     pub opcode, set_opcode: 6, 0;
 }
 
-pub fn parse_reg(reg: &str) -> Result<u32> {
-    if let Some(stripped) = reg.strip_prefix('x') {
-        stripped.parse::<u32>().map_err(|_| Error::InvalidRegister)
-    } else {
-        Err(Error::InvalidRegister)
-    }
-}
-
 pub fn encode(instr_string: &str) -> Result<Instruction> {
     let tokens: Vec<&str> = instr_string
         .split(|c| c == ' ' || c == ',' || c == '(' || c == ')')
@@ -100,6 +94,8 @@ pub fn encode(instr_string: &str) -> Result<Instruction> {
         return Err(Error::InvalidFormat);
     }
 
+    println!("Tokens: {:?}", tokens);
+
     let mnemonic = tokens[0].to_lowercase();
     let operands = &tokens[1..];
 
@@ -108,9 +104,9 @@ pub fn encode(instr_string: &str) -> Result<Instruction> {
             if operands.len() != 3 {
                 return Err(Error::InvalidFormat);
             }
-            let rd = parse_reg(operands[0])?;
-            let rs1 = parse_reg(operands[1])?;
-            let rs2 = parse_reg(operands[2])?;
+            let rd = util::parse_reg(operands[0])?;
+            let rs1 = util::parse_reg(operands[1])?;
+            let rs2 = util::parse_reg(operands[2])?;
             let (funct3, funct7) = match mnemonic.as_str() {
                 "add" => (0x0, 0x00),
                 "sub" => (0x0, 0x20),
@@ -141,13 +137,13 @@ pub fn encode(instr_string: &str) -> Result<Instruction> {
             if operands.len() != 3 {
                 return Err(Error::InvalidFormat);
             }
-            let rd = parse_reg(operands[0])?;
-            let rs1 = parse_reg(operands[1])?;
+            let rd = util::parse_reg(operands[0])?;
+            let rs1 = util::parse_reg(operands[1])?;
             let imm: i32 = operands[2].parse().map_err(|_| Error::InvalidImmediate)?;
             if imm < -2048 || imm > 2047 {
                 return Err(Error::ImmediateOutOfRange);
             }
-            let imm: u32 = (imm as u32) & 0xfff;
+            let mut imm: u32 = (imm as u32) & 0xfff;
             let funct3 = match mnemonic.as_str() {
                 "addi" => 0x0,
                 "xori" => 0x4,
@@ -160,8 +156,10 @@ pub fn encode(instr_string: &str) -> Result<Instruction> {
                 "sltiu" => 0x3,
                 _ => unreachable!(),
             };
-            // TODO fix slli, srli, srai
-            let opcode = 0010011;
+            if mnemonic == "slli" || mnemonic == "srli" || mnemonic == "srai" {
+                imm = imm & 0x1f; // shamt
+            }
+            let opcode = 0b0010011;
 
             let mut i = IType(0);
             i.set_imm(imm);
