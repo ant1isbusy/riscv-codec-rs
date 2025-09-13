@@ -8,5 +8,4 @@ pub enum Error {
     InvalidRegister,
     ImmediateOutOfRange,
     InvalidImmediate,
-    Other,
 }

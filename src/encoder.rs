@@ -3,6 +3,7 @@ use bitfield::bitfield;
 
 use crate::util;
 
+#[allow(dead_code)]
 #[derive(Debug)]
 pub enum Instruction {
     RType(RType),
