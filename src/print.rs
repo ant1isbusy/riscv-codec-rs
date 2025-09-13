@@ -1,18 +1,15 @@
-use crate::encoder::*;
+use crate::{encoder::*, print};
 use colored::*;
 
-fn print_r_type(d: &EncodedInstruction, r: &RType) {
+fn format_r_type(d: &EncodedInstruction, r: &RType) -> (String, String, String) {
     let operands = &d.operands;
-
-    // print instruction (operands):
-    println!(
+    let instr = format!(
         "{} {}, {}, {}",
         d.mnemonic.red().bold(),
         operands[0].green(),
         operands[1].yellow(),
         operands[2].blue(),
     );
-    // print binary representation:
     let fields = [
         format!("{:07b}", r.funct7()).red().to_string(),
         format!("{:05b}", r.rs2()).blue().to_string(),
@@ -22,18 +19,19 @@ fn print_r_type(d: &EncodedInstruction, r: &RType) {
         format!("{:07b}", r.opcode()).red().to_string(),
     ];
     let bits = fields.join(" ");
-    println!("{}", bits);
+    let hex = format!("0x{:08x}", r.0).bold().to_string();
+
+    return (instr, bits, hex);
 }
 
-fn print_i_type(_d: &EncodedInstruction, _i: &IType) {
-    // TODO
+fn format_i_type(d: &EncodedInstruction, i: &IType) {
+    let operands = &d.operands;
 }
 
 pub fn print_encoded_instruction(d: &EncodedInstruction) {
-    match &d.instr {
-        Instruction::RType(r) => {
-            print_r_type(d, r);
-        }
+    let out = match &d.instr {
+        Instruction::RType(r) => format_r_type(d, r),
+        // Instruction::IType(i) => format_i_type(d, i),
         /* Instruction::IType(_) => {
             print_i_type(d, i);
         }
@@ -52,8 +50,14 @@ pub fn print_encoded_instruction(d: &EncodedInstruction) {
         Instruction::CSRType(_) => {
             print_csr_type(d);
         } */
-        _ => {
-            println!("Encoded Instruction: {:?}", d.instr);
-        }
-    }
+        _ => (
+            "Unsupported instruction type".to_string(),
+            "".to_string(),
+            "".to_string(),
+        ),
+    };
+
+    println!("ASM: {}", out.0);
+    println!("BIN: {}", out.1);
+    println!("HEX: {}\n", out.2);
 }

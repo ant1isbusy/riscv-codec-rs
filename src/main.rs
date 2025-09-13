@@ -29,10 +29,16 @@ fn main() {
         if util::is_hex(input) {
             match u32::from_str_radix(&input[2..], 16) {
                 Ok(hex) => match decoder::decode(hex) {
-                    Ok(instr) => println!("DEC: {:?}", instr),
-                    Err(e) => println!("Error decoding instruction: {:?}", e),
+                    Ok(instr) => {
+                        let encoded = encoder::encode(&instr.to_string());
+                        match encoded {
+                            Ok(d) => print::print_encoded_instruction(&d),
+                            Err(e) => println!("Error re-encoding instruction: {:?}", e),
+                        }
+                    }
+                    Err(_) => println!("Error parsing hex input:"),
                 },
-                Err(e) => println!("Error parsing hex input: {}", e),
+                Err(_) => println!("Error parsing hex input:"),
             }
         } else {
             match encoder::encode(input) {

@@ -113,8 +113,6 @@ pub fn encode(instr_string: &str) -> Result<EncodedInstruction> {
         return Err(Error::InvalidFormat);
     }
 
-    println!("Tokens: {:?}", tokens);
-
     let mnemonic = tokens[0].to_lowercase();
     let operands = tokens[1..]
         .iter()
