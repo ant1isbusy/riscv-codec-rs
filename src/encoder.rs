@@ -135,7 +135,7 @@ pub fn encode(instr_string: &str) -> Result<Instruction> {
         }
 
         "addi" | "xori" | "ori" | "andi" | "slli" | "srli" | "srai" | "slti" | "sltiu" | "lb"
-        | "lh" | "lw" | "lbu" | "lhu" => {
+        | "lh" | "lw" | "lbu" | "lhu" | "jalr" => {
             if operands.len() != 3 {
                 return Err(Error::InvalidFormat);
             }
@@ -149,8 +149,16 @@ pub fn encode(instr_string: &str) -> Result<Instruction> {
                 imm = util::parse_immediate(operands[2])?;
                 rs1 = util::parse_reg(operands[1])?;
             }
-            if imm < -2048 || imm > 2047 {
-                return Err(Error::ImmediateOutOfRange);
+
+            // uimm variant dont check range
+            if ["sltiu", "lbu", "lhu"].contains(&mnemonic.as_str()) {
+                if imm < 0 || imm > 4095 {
+                    return Err(Error::ImmediateOutOfRange);
+                }
+            } else {
+                if imm < -2048 || imm > 2047 {
+                    return Err(Error::ImmediateOutOfRange);
+                }
             }
             let funct3 = match mnemonic.as_str() {
                 "addi" => 0x0,
