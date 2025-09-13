@@ -140,18 +140,17 @@ pub fn encode(instr_string: &str) -> Result<Instruction> {
             }
             let rd = util::parse_reg(operands[0])?;
             let rs1: u32;
-            let imm_p: i32;
+            let mut imm: i32;
             if ["lb", "lh", "lw", "lbu", "lhu"].contains(&mnemonic.as_str()) {
-                imm_p = util::parse_immediate(operands[1])?;
+                imm = util::parse_immediate(operands[1])?;
                 rs1 = util::parse_reg(operands[2])?;
             } else {
-                imm_p = util::parse_immediate(operands[2])?;
+                imm = util::parse_immediate(operands[2])?;
                 rs1 = util::parse_reg(operands[1])?;
             }
-            if imm_p < -2048 || imm_p > 2047 {
+            if imm < -2048 || imm > 2047 {
                 return Err(Error::ImmediateOutOfRange);
             }
-            let mut imm: u32 = (imm_p as u32) & 0xfff;
             let funct3 = match mnemonic.as_str() {
                 "addi" => 0x0,
                 "xori" => 0x4,
@@ -178,7 +177,7 @@ pub fn encode(instr_string: &str) -> Result<Instruction> {
                 0b0010011
             };
             let mut i = IType(0);
-            i.set_imm(imm);
+            i.set_imm(imm as u32);
             i.set_rs1(rs1);
             i.set_funct3(funct3);
             i.set_rd(rd);
