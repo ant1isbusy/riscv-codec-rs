@@ -142,7 +142,7 @@ pub fn encode(instr_string: &str) -> Result<Instruction> {
             let rd = util::parse_reg(operands[0])?;
             let rs1: u32;
             let mut imm: i32;
-            if ["lb", "lh", "lw", "lbu", "lhu"].contains(&mnemonic.as_str()) {
+            if ["lb", "lh", "lw", "lbu", "lhu", "jalr"].contains(&mnemonic.as_str()) {
                 imm = util::parse_immediate(operands[1])?;
                 rs1 = util::parse_reg(operands[2])?;
             } else {
@@ -175,6 +175,7 @@ pub fn encode(instr_string: &str) -> Result<Instruction> {
                 "lw" => 0x2,
                 "lbu" => 0x4,
                 "lhu" => 0x5,
+                "jalr" => 0x0,
                 _ => unreachable!(),
             };
             if mnemonic == "slli" || mnemonic == "srli" || mnemonic == "srai" {
@@ -182,6 +183,8 @@ pub fn encode(instr_string: &str) -> Result<Instruction> {
             }
             let opcode = if ["lb", "lh", "lw", "lbu", "lhu"].contains(&mnemonic.as_str()) {
                 0b0000011
+            } else if mnemonic == "jalr" {
+                0b1100111
             } else {
                 0b0010011
             };
