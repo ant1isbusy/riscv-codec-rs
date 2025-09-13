@@ -3,6 +3,7 @@ use std::io::{self, Write};
 mod decoder;
 mod encoder;
 mod error;
+mod print;
 mod util;
 
 fn main() {
@@ -35,18 +36,7 @@ fn main() {
             }
         } else {
             match encoder::encode(input) {
-                Ok(instr) => match instr {
-                    // todo added nice prints for each type
-                    encoder::Instruction::RType(r) => println!("ENC: {:?} (0x{:08x})", instr, r.0),
-                    encoder::Instruction::IType(i) => println!("ENC: {:?} (0x{:08x})", instr, i.0),
-                    encoder::Instruction::SType(s) => println!("ENC: {:?} (0x{:08x})", instr, s.0),
-                    encoder::Instruction::BType(b) => println!("ENC: {:?} (0x{:08x})", instr, b.0),
-                    encoder::Instruction::UType(u) => println!("ENC: {:?} (0x{:08x})", instr, u.0),
-                    encoder::Instruction::JType(j) => println!("ENC: {:?} (0x{:08x})", instr, j.0),
-                    encoder::Instruction::CSRType(c) => {
-                        println!("ENC: {:?} (0x{:08x})", instr, c.0)
-                    }
-                },
+                Ok(d) => print::print_encoded_instruction(&d),
                 Err(e) => println!("Error encoding instruction: {:?}", e),
             }
         }
