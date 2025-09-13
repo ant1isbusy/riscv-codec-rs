@@ -133,17 +133,25 @@ pub fn encode(instr_string: &str) -> Result<Instruction> {
             Ok(Instruction::RType(r))
         }
 
-        "addi" | "xori" | "ori" | "andi" | "slli" | "srli" | "srai" | "slti" | "sltiu" => {
+        "addi" | "xori" | "ori" | "andi" | "slli" | "srli" | "srai" | "slti" | "sltiu" | "lb"
+        | "lh" | "lw" | "lbu" | "lhu" => {
             if operands.len() != 3 {
                 return Err(Error::InvalidFormat);
             }
             let rd = util::parse_reg(operands[0])?;
-            let rs1 = util::parse_reg(operands[1])?;
-            let imm: i32 = operands[2].parse().map_err(|_| Error::InvalidImmediate)?;
-            if imm < -2048 || imm > 2047 {
+            let rs1: u32;
+            let imm_p: i32;
+            if ["lb", "lh", "lw", "lbu", "lhu"].contains(&mnemonic.as_str()) {
+                imm_p = util::parse_immediate(operands[1])?;
+                rs1 = util::parse_reg(operands[2])?;
+            } else {
+                imm_p = util::parse_immediate(operands[2])?;
+                rs1 = util::parse_reg(operands[1])?;
+            }
+            if imm_p < -2048 || imm_p > 2047 {
                 return Err(Error::ImmediateOutOfRange);
             }
-            let mut imm: u32 = (imm as u32) & 0xfff;
+            let mut imm: u32 = (imm_p as u32) & 0xfff;
             let funct3 = match mnemonic.as_str() {
                 "addi" => 0x0,
                 "xori" => 0x4,
@@ -154,13 +162,21 @@ pub fn encode(instr_string: &str) -> Result<Instruction> {
                 "srai" => 0x5,
                 "slti" => 0x2,
                 "sltiu" => 0x3,
+                "lb" => 0x0,
+                "lh" => 0x1,
+                "lw" => 0x2,
+                "lbu" => 0x4,
+                "lhu" => 0x5,
                 _ => unreachable!(),
             };
             if mnemonic == "slli" || mnemonic == "srli" || mnemonic == "srai" {
                 imm = imm & 0x1f; // shamt
             }
-            let opcode = 0b0010011;
-
+            let opcode = if ["lb", "lh", "lw", "lbu", "lhu"].contains(&mnemonic.as_str()) {
+                0b0000011
+            } else {
+                0b0010011
+            };
             let mut i = IType(0);
             i.set_imm(imm);
             i.set_rs1(rs1);
@@ -170,6 +186,7 @@ pub fn encode(instr_string: &str) -> Result<Instruction> {
 
             Ok(Instruction::IType(i))
         }
+
         _ => Err(Error::UnknownInstruction),
     }
 }
