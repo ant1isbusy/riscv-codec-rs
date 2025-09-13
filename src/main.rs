@@ -43,6 +43,9 @@ fn main() {
                     encoder::Instruction::BType(b) => println!("ENC: {:?} (0x{:08x})", instr, b.0),
                     encoder::Instruction::UType(u) => println!("ENC: {:?} (0x{:08x})", instr, u.0),
                     encoder::Instruction::JType(j) => println!("ENC: {:?} (0x{:08x})", instr, j.0),
+                    encoder::Instruction::CSRType(c) => {
+                        println!("ENC: {:?} (0x{:08x})", instr, c.0)
+                    }
                 },
                 Err(e) => println!("Error encoding instruction: {:?}", e),
             }

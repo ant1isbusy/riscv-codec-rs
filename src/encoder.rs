@@ -12,6 +12,7 @@ pub enum Instruction {
     BType(BType),
     UType(UType),
     JType(JType),
+    CSRType(CSRType),
 }
 
 bitfield! {
@@ -81,6 +82,17 @@ bitfield! {
     pub imm10_1, set_imm10_1: 30, 21;
     pub imm11, set_imm11: 20;
     pub imm19_12, set_imm19_12: 19, 12;
+    pub rd, set_rd: 11, 7;
+    pub opcode, set_opcode: 6, 0;
+}
+
+bitfield! {
+    #[derive(Clone, Copy)]
+    pub struct CSRType(u32);
+    impl Debug;
+    pub csr, set_csr: 31, 20;
+    pub rs1, set_rs1: 19, 15;
+    pub funct3, set_funct3: 14, 12;
     pub rd, set_rd: 11, 7;
     pub opcode, set_opcode: 6, 0;
 }
@@ -265,6 +277,49 @@ pub fn encode(instr_string: &str) -> Result<Instruction> {
             b.set_opcode(opcode);
 
             Ok(Instruction::BType(b))
+        }
+        "lui" | "auipc" => {
+            if operands.len() != 2 {
+                return Err(Error::InvalidFormat);
+            }
+            let rd = util::parse_reg(operands[0])?;
+            let imm = util::parse_immediate(operands[1])?;
+            if imm < -524288 || imm > 524287 {
+                return Err(Error::ImmediateOutOfRange);
+            }
+            let opcode = if mnemonic == "lui" {
+                0b0110111
+            } else {
+                0b0010111
+            };
+
+            let mut u = UType(0);
+            u.set_imm((imm as u32) >> 12);
+            u.set_rd(rd);
+            u.set_opcode(opcode);
+            Ok(Instruction::UType(u))
+        }
+        "jal" => {
+            if operands.len() != 2 {
+                return Err(Error::InvalidFormat);
+            }
+            let rd = util::parse_reg(operands[0])?;
+            let imm = util::parse_immediate(operands[1])?;
+            if imm < -1048576 || imm > 1048574 {
+                return Err(Error::ImmediateOutOfRange);
+            }
+            if imm % 2 != 0 {
+                return Err(Error::ImmediateMisaligned);
+            }
+            let opcode = 0b1101111;
+            let mut j = JType(0);
+            j.set_rd(rd);
+            j.set_imm20(((imm as u32) >> 20) & 0x1 != 0);
+            j.set_imm19_12(((imm as u32) >> 12) & 0xff);
+            j.set_imm11(((imm as u32) >> 11) & 0x1 != 0);
+            j.set_imm10_1(((imm as u32) >> 1) & 0x3ff);
+            j.set_opcode(opcode);
+            Ok(Instruction::JType(j))
         }
 
         _ => Err(Error::UnknownInstruction),
