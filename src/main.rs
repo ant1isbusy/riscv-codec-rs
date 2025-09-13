@@ -9,7 +9,7 @@ fn main() {
     let mut input = String::new();
 
     loop {
-        print!("Enter instruction or hex (or 'exit' to quit): ");
+        print!("Instruction: ");
         io::stdout().flush().unwrap();
 
         input.clear();

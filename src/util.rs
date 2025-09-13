@@ -15,7 +15,14 @@ pub fn parse_immediate(s: &str) -> Result<i32> {
 
 pub fn parse_reg(reg: &str) -> Result<u32> {
     if let Some(stripped) = reg.strip_prefix('x') {
-        stripped.parse::<u32>().map_err(|_| Error::InvalidRegister)
+        let num = stripped
+            .parse::<u32>()
+            .map_err(|_| Error::InvalidRegister)?;
+        if num <= 31 {
+            Ok(num)
+        } else {
+            Err(Error::InvalidRegister)
+        }
     } else {
         Err(Error::InvalidRegister)
     }
