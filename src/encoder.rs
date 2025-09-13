@@ -198,6 +198,75 @@ pub fn encode(instr_string: &str) -> Result<Instruction> {
             Ok(Instruction::IType(i))
         }
 
+        "sb" | "sh" | "sw" => {
+            if operands.len() != 3 {
+                return Err(Error::InvalidFormat);
+            }
+            let rs2 = util::parse_reg(operands[0])?;
+            let imm = util::parse_immediate(operands[1])?;
+            let rs1 = util::parse_reg(operands[2])?;
+
+            if imm < -2048 || imm > 2047 {
+                return Err(Error::ImmediateOutOfRange);
+            }
+
+            let funct3 = match mnemonic.as_str() {
+                "sb" => 0x0,
+                "sh" => 0x1,
+                "sw" => 0x2,
+                _ => unreachable!(),
+            };
+            let opcode = 0b0100011;
+
+            let mut s = SType(0);
+            s.set_imm4_0((imm as u32) & 0x1f);
+            s.set_imm11_5(((imm as u32) >> 5) & 0x7f);
+            s.set_rs2(rs2);
+            s.set_rs1(rs1);
+            s.set_funct3(funct3);
+            s.set_opcode(opcode);
+
+            Ok(Instruction::SType(s))
+        }
+        "beq" | "bne" | "blt" | "bge" | "bltu" | "bgeu" => {
+            if operands.len() != 3 {
+                return Err(Error::InvalidFormat);
+            }
+            let rs1 = util::parse_reg(operands[0])?;
+            let rs2 = util::parse_reg(operands[1])?;
+            let imm = util::parse_immediate(operands[2])?;
+
+            if imm < -4096 || imm > 4094 {
+                return Err(Error::ImmediateOutOfRange);
+            }
+            if imm % 2 != 0 {
+                return Err(Error::ImmediateMisaligned);
+            }
+
+            let funct3 = match mnemonic.as_str() {
+                "beq" => 0x0,
+                "bne" => 0x1,
+                "blt" => 0x4,
+                "bge" => 0x5,
+                "bltu" => 0x6,
+                "bgeu" => 0x7,
+                _ => unreachable!(),
+            };
+            let opcode = 0b1100011;
+
+            let mut b = BType(0);
+            b.set_imm11(((imm as u32) >> 11) & 0x1 != 0);
+            b.set_imm4_1(((imm as u32) >> 1) & 0xf);
+            b.set_imm10_5(((imm as u32) >> 5) & 0x3f);
+            b.set_imm20(((imm as u32) >> 12) & 0x1 != 0);
+            b.set_rs2(rs2);
+            b.set_rs1(rs1);
+            b.set_funct3(funct3);
+            b.set_opcode(opcode);
+
+            Ok(Instruction::BType(b))
+        }
+
         _ => Err(Error::UnknownInstruction),
     }
 }

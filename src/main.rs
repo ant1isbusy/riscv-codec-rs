@@ -36,6 +36,7 @@ fn main() {
         } else {
             match encoder::encode(input) {
                 Ok(instr) => match instr {
+                    // todo added nice prints for each type
                     encoder::Instruction::RType(r) => println!("ENC: {:?} (0x{:08x})", instr, r.0),
                     encoder::Instruction::IType(i) => println!("ENC: {:?} (0x{:08x})", instr, i.0),
                     encoder::Instruction::SType(s) => println!("ENC: {:?} (0x{:08x})", instr, s.0),
