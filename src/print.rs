@@ -78,16 +78,56 @@ fn format_s_type(d: &EncodedInstruction, s: &SType) -> (String, String, String) 
     return (instr, bits, hex);
 }
 
+fn format_b_type(d: &EncodedInstruction, b: &BType) -> (String, String, String) {
+    let operands = &d.operands;
+    let instr = format!(
+        "{} {}, {}, {}",
+        d.mnemonic.red().bold(),
+        operands[0].green(),
+        operands[1].yellow(),
+        operands[2].blue(),
+    );
+    let fields = [
+        format!("{:01b}", b.imm12() as u32).blue().to_string(),
+        format!("{:06b}", b.imm10_5() as u32).blue().to_string(),
+        format!("{:05b}", b.rs2()).green().to_string(),
+        format!("{:05b}", b.rs1()).yellow().to_string(),
+        format!("{:03b}", b.funct3()).red().to_string(),
+        format!("{:04b}", b.imm4_1() as u32).blue().to_string(),
+        format!("{:01b}", b.imm11() as u32).blue().to_string(),
+        format!("{:07b}", b.opcode()).red().to_string(),
+    ];
+    let bits = fields.join(" ");
+    let hex = format!("0x{:08x}", b.0).bold().to_string();
+    return (instr, bits, hex);
+}
+
+fn format_u_type(d: &EncodedInstruction, u: &UType) -> (String, String, String) {
+    let operands = &d.operands;
+    let instr = format!(
+        "{} {}, {}",
+        d.mnemonic.red().bold(),
+        operands[0].green(),
+        operands[1].blue(),
+    );
+    let fields = [
+        format!("{:020b}", u.imm()).blue().to_string(),
+        format!("{:05b}", u.rd()).green().to_string(),
+        format!("{:07b}", u.opcode()).red().to_string(),
+    ];
+    let bits = fields.join(" ");
+    let hex = format!("0x{:08x}", u.0).bold().to_string();
+    return (instr, bits, hex);
+}
+
 pub fn print_encoded_instruction(d: &EncodedInstruction) {
     let out = match &d.instr {
         Instruction::RType(r) => format_r_type(d, r),
         Instruction::IType(i) => format_i_type(d, i),
         Instruction::SType(s) => format_s_type(d, s),
-
-        /* Instruction::BType(_) => {
-            print_b_type(d);
-        }
-        Instruction::UType(_) => {
+        Instruction::BType(b) => format_b_type(d, b),
+        Instruction::UType(u) => format_u_type(d, u),
+        /* Instruction::UType(_) => {
             print_u_type(d);
         }
         Instruction::JType(_) => {

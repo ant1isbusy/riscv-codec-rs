@@ -55,7 +55,7 @@ bitfield! {
     #[derive(Clone, Copy)]
     pub struct BType(u32);
     impl Debug;
-    pub imm20, set_imm20: 31;
+    pub imm12, set_imm12: 31;
     pub imm10_5, set_imm10_5: 30, 25;
     pub rs2, set_rs2: 24, 20;
     pub rs1, set_rs1: 19, 15;
@@ -277,7 +277,7 @@ pub fn encode(instr_string: &str) -> Result<EncodedInstruction> {
             b.set_imm11(((imm as u32) >> 11) & 0x1 != 0);
             b.set_imm4_1(((imm as u32) >> 1) & 0xf);
             b.set_imm10_5(((imm as u32) >> 5) & 0x3f);
-            b.set_imm20(((imm as u32) >> 12) & 0x1 != 0);
+            b.set_imm12(((imm as u32) >> 12) & 0x1 != 0);
             b.set_rs2(rs2);
             b.set_rs1(rs1);
             b.set_funct3(funct3);
@@ -301,7 +301,7 @@ pub fn encode(instr_string: &str) -> Result<EncodedInstruction> {
             };
 
             let mut u = UType(0);
-            u.set_imm((imm as u32) >> 12);
+            u.set_imm(imm as u32);
             u.set_rd(rd);
             u.set_opcode(opcode);
             Instruction::UType(u)
