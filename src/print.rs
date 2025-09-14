@@ -120,6 +120,27 @@ fn format_u_type(d: &EncodedInstruction, u: &UType) -> (String, String, String) 
     return (instr, bits, hex);
 }
 
+fn format_j_type(d: &EncodedInstruction, j: &JType) -> (String, String, String) {
+    let operands = &d.operands;
+    let instr = format!(
+        "{} {}, {}",
+        d.mnemonic.red().bold(),
+        operands[0].green(),
+        operands[1].blue(),
+    );
+    let fields = [
+        format!("{:01b}", j.imm20() as u32).blue().to_string(),
+        format!("{:010b}", j.imm10_1() as u32).blue().to_string(),
+        format!("{:01b}", j.imm11() as u32).blue().to_string(),
+        format!("{:008b}", j.imm19_12() as u32).blue().to_string(),
+        format!("{:05b}", j.rd()).green().to_string(),
+        format!("{:07b}", j.opcode()).red().to_string(),
+    ];
+    let bits = fields.join(" ");
+    let hex = format!("0x{:08x}", j.0).bold().to_string();
+    return (instr, bits, hex);
+}
+
 pub fn print_encoded_instruction(d: &EncodedInstruction) {
     let out = match &d.instr {
         Instruction::RType(r) => format_r_type(d, r),
@@ -127,12 +148,8 @@ pub fn print_encoded_instruction(d: &EncodedInstruction) {
         Instruction::SType(s) => format_s_type(d, s),
         Instruction::BType(b) => format_b_type(d, b),
         Instruction::UType(u) => format_u_type(d, u),
-        /* Instruction::UType(_) => {
-            print_u_type(d);
-        }
-        Instruction::JType(_) => {
-            print_j_type(d);
-        }
+        Instruction::JType(j) => format_j_type(d, j),
+        /*
         Instruction::CSRType(_) => {
             print_csr_type(d);
         } */
