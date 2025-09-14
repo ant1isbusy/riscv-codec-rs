@@ -141,6 +141,27 @@ fn format_j_type(d: &EncodedInstruction, j: &JType) -> (String, String, String) 
     return (instr, bits, hex);
 }
 
+fn format_csr_type(d: &EncodedInstruction, c: &CSRType) -> (String, String, String) {
+    let operands = &d.operands;
+    let hex = format!("0x{:08x}", c.0).bold().to_string();
+    let instr = format!(
+        "{} {}, {}, {}",
+        d.mnemonic.red().bold(),
+        operands[0].green(),
+        operands[1].blue(),
+        operands[2].yellow(),
+    );
+    let fields = [
+        format!("{:012b}", c.csr()).blue().to_string(),
+        format!("{:05b}", c.rs1()).yellow().to_string(),
+        format!("{:03b}", c.funct3()).red().to_string(),
+        format!("{:05b}", c.rd()).green().to_string(),
+        format!("{:07b}", c.opcode()).red().to_string(),
+    ];
+    let bits = fields.join(" ");
+    return (instr, bits, hex);
+}
+
 pub fn print_encoded_instruction(d: &EncodedInstruction) {
     let out = match &d.instr {
         Instruction::RType(r) => format_r_type(d, r),
@@ -149,15 +170,7 @@ pub fn print_encoded_instruction(d: &EncodedInstruction) {
         Instruction::BType(b) => format_b_type(d, b),
         Instruction::UType(u) => format_u_type(d, u),
         Instruction::JType(j) => format_j_type(d, j),
-        /*
-        Instruction::CSRType(_) => {
-            print_csr_type(d);
-        } */
-        _ => (
-            "Unsupported instruction type".to_string(),
-            "".to_string(),
-            "".to_string(),
-        ),
+        Instruction::CSRType(c) => format_csr_type(d, c),
     };
 
     println!("ASM: {}", out.0);
