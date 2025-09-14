@@ -90,8 +90,8 @@ fn format_b_type(d: &EncodedInstruction, b: &BType) -> (String, String, String) 
     let fields = [
         format!("{:01b}", b.imm12() as u32).blue().to_string(),
         format!("{:06b}", b.imm10_5() as u32).blue().to_string(),
-        format!("{:05b}", b.rs2()).green().to_string(),
-        format!("{:05b}", b.rs1()).yellow().to_string(),
+        format!("{:05b}", b.rs2()).yellow().to_string(),
+        format!("{:05b}", b.rs1()).green().to_string(),
         format!("{:03b}", b.funct3()).red().to_string(),
         format!("{:04b}", b.imm4_1() as u32).blue().to_string(),
         format!("{:01b}", b.imm11() as u32).blue().to_string(),
