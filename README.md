@@ -7,7 +7,7 @@ A simple tool to encode and decode RISC-V 32-bit instructions. For now, only non
 ### Installation:
 Using cargo:
 ```sh
-cargo install --git https://github.com/ant1isbusy/rv32-tui
+cargo install --git https://github.com/ant1isbusy/riscv-codec-rs
 ```
 
 ##### TODO
