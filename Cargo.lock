@@ -57,7 +57,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "rv32-tui"
+name = "rv-codec"
 version = "0.1.0"
 dependencies = [
  "bitfield",

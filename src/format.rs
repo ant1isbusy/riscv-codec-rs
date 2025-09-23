@@ -1,5 +1,105 @@
-use crate::encoder::*;
+use bitfield::bitfield;
 use colored::*;
+
+#[allow(dead_code)]
+#[derive(Debug)]
+pub enum Instruction {
+    RType(RType),
+    IType(IType),
+    SType(SType),
+    BType(BType),
+    UType(UType),
+    JType(JType),
+    CSRType(CSRType),
+}
+
+bitfield! {
+    #[derive(Clone, Copy)]
+    pub struct RType(u32);
+    impl Debug;
+    u32;
+    pub funct7, set_funct7: 31, 25;
+    pub rs2, set_rs2: 24, 20;
+    pub rs1, set_rs1: 19, 15;
+    pub funct3, set_funct3: 14, 12;
+    pub rd, set_rd: 11, 7;
+    pub opcode, set_opcode: 6, 0;
+}
+
+bitfield! {
+    #[derive(Clone, Copy)]
+    pub struct IType(u32);
+    impl Debug;
+    pub imm, set_imm: 31, 20;
+    pub rs1, set_rs1: 19, 15;
+    pub funct3, set_funct3: 14, 12;
+    pub rd, set_rd: 11, 7;
+    pub opcode, set_opcode: 6, 0;
+}
+
+bitfield! {
+    #[derive(Clone, Copy)]
+    pub struct SType(u32);
+    impl Debug;
+    pub imm11_5, set_imm11_5: 31, 25;
+    pub rs2, set_rs2: 24, 20;
+    pub rs1, set_rs1: 19, 15;
+    pub funct3, set_funct3: 14, 12;
+    pub imm4_0, set_imm4_0: 11, 7;
+    pub opcode, set_opcode: 6, 0;
+}
+
+bitfield! {
+    #[derive(Clone, Copy)]
+    pub struct BType(u32);
+    impl Debug;
+    pub imm12, set_imm12: 31;
+    pub imm10_5, set_imm10_5: 30, 25;
+    pub rs2, set_rs2: 24, 20;
+    pub rs1, set_rs1: 19, 15;
+    pub funct3, set_funct3: 14, 12;
+    pub imm4_1, set_imm4_1: 11, 8;
+    pub imm11, set_imm11: 7;
+    pub opcode, set_opcode: 6, 0;
+}
+
+bitfield! {
+    #[derive(Clone, Copy)]
+    pub struct UType(u32);
+    impl Debug;
+    pub imm, set_imm: 31, 12;
+    pub rd, set_rd: 11, 7;
+    pub opcode, set_opcode: 6, 0;
+}
+
+bitfield! {
+    #[derive(Clone, Copy)]
+    pub struct JType(u32);
+    impl Debug;
+    pub imm20, set_imm20: 31;
+    pub imm10_1, set_imm10_1: 30, 21;
+    pub imm11, set_imm11: 20;
+    pub imm19_12, set_imm19_12: 19, 12;
+    pub rd, set_rd: 11, 7;
+    pub opcode, set_opcode: 6, 0;
+}
+
+bitfield! {
+    #[derive(Clone, Copy)]
+    pub struct CSRType(u32);
+    impl Debug;
+    pub csr, set_csr: 31, 20;
+    pub rs1, set_rs1: 19, 15;
+    pub funct3, set_funct3: 14, 12;
+    pub rd, set_rd: 11, 7;
+    pub opcode, set_opcode: 6, 0;
+}
+
+pub struct EncodedInstruction {
+    pub instr: Instruction,
+    pub mnemonic: String,
+    pub operands: Vec<String>,
+}
 
 fn format_r_type(d: &EncodedInstruction, r: &RType) -> (String, String, String) {
     let operands = &d.operands;

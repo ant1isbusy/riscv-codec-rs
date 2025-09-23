@@ -3,7 +3,7 @@ use std::io::{self, Write};
 mod decoder;
 mod encoder;
 mod error;
-mod print;
+mod format;
 mod util;
 
 fn main() {
@@ -32,7 +32,7 @@ fn main() {
                     Ok(instr) => {
                         let encoded = encoder::encode(&instr.to_string());
                         match encoded {
-                            Ok(d) => print::print_encoded_instruction(&d),
+                            Ok(d) => format::print_encoded_instruction(&d),
                             Err(e) => println!("Error re-encoding instruction: {:?}", e),
                         }
                     }
@@ -42,7 +42,7 @@ fn main() {
             }
         } else {
             match encoder::encode(input) {
-                Ok(d) => print::print_encoded_instruction(&d),
+                Ok(d) => format::print_encoded_instruction(&d),
                 Err(e) => println!("Error encoding instruction: {:?}", e),
             }
         }
