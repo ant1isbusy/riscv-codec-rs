@@ -30,11 +30,7 @@ fn main() {
             match u32::from_str_radix(&input[2..], 16) {
                 Ok(hex) => match decoder::decode(hex) {
                     Ok(instr) => {
-                        let encoded = encoder::encode(&instr.to_string());
-                        match encoded {
-                            Ok(d) => format::print_encoded_instruction(&d),
-                            Err(e) => println!("Error re-encoding instruction: {:?}", e),
-                        }
+                        format::print_encoded_instruction(&instr);
                     }
                     Err(_) => println!("Error parsing hex input:"),
                 },
