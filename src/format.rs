@@ -101,14 +101,43 @@ pub struct EncodedInstruction {
     pub operands: Vec<String>,
 }
 
-fn format_r_type(d: &EncodedInstruction, r: &RType) -> (String, String, String) {
+const ABI_NAMES: [&str; 32] = [
+    "zero", "ra", "sp", "gp", "tp", "t0", "t1", "t2", "s0", "s1", "a0", "a1", "a2", "a3", "a4",
+    "a5", "a6", "a7", "s2", "s3", "s4", "s5", "s6", "s7", "s8", "s9", "s10", "s11", "t3", "t4",
+    "t5", "t6",
+];
+
+fn operand_to_abi(op: &str) -> String {
+    if let Some(stripped) = op.strip_prefix('x') {
+        if let Ok(idx) = stripped.parse::<usize>() {
+            if idx < ABI_NAMES.len() {
+                return ABI_NAMES[idx].to_string();
+            }
+        }
+    }
+    op.to_string()
+}
+
+fn operands_to_abi(ops: &[String]) -> Vec<String> {
+    ops.iter().map(|o| operand_to_abi(o)).collect()
+}
+
+fn format_r_type(d: &EncodedInstruction, r: &RType) -> (String, String, String, String) {
     let operands = &d.operands;
+    let abi_operands = operands_to_abi(operands);
     let instr = format!(
         "{} {}, {}, {}",
         d.mnemonic.red().bold(),
         operands[0].green(),
         operands[1].yellow(),
         operands[2].blue(),
+    );
+    let abi_instr = format!(
+        "{} {}, {}, {}",
+        d.mnemonic.red().bold(),
+        abi_operands[0].green(),
+        abi_operands[1].yellow(),
+        abi_operands[2].blue(),
     );
     let fields = [
         format!("{:07b}", r.funct7()).red().to_string(),
@@ -121,13 +150,15 @@ fn format_r_type(d: &EncodedInstruction, r: &RType) -> (String, String, String) 
     let bits = fields.join(" ");
     let hex = format!("0x{:08x}", r.0).bold().to_string();
 
-    return (instr, bits, hex);
+    return (instr, abi_instr, bits, hex);
 }
 
-fn format_i_type(d: &EncodedInstruction, i: &IType) -> (String, String, String) {
+fn format_i_type(d: &EncodedInstruction, i: &IType) -> (String, String, String, String) {
     let operands = &d.operands;
+    let abi_operands = operands_to_abi(operands);
     let hex = format!("0x{:08x}", i.0).bold().to_string();
     let instr;
+    let abi_instr;
     if ["lb", "lh", "lw", "lbu", "lhu", "jalr"].contains(&d.mnemonic.as_str()) {
         instr = format!(
             "{} {}, {}({})",
@@ -136,6 +167,13 @@ fn format_i_type(d: &EncodedInstruction, i: &IType) -> (String, String, String) 
             operands[1].blue(),
             operands[2].yellow(),
         );
+        abi_instr = format!(
+            "{} {}, {}({})",
+            d.mnemonic.red().bold(),
+            abi_operands[0].green(),
+            abi_operands[1].blue(),
+            abi_operands[2].yellow(),
+        );
     } else {
         instr = format!(
             "{} {}, {}, {}",
@@ -143,6 +181,13 @@ fn format_i_type(d: &EncodedInstruction, i: &IType) -> (String, String, String) 
             operands[0].green(),
             operands[1].yellow(),
             operands[2].blue(),
+        );
+        abi_instr = format!(
+            "{} {}, {}, {}",
+            d.mnemonic.red().bold(),
+            abi_operands[0].green(),
+            abi_operands[1].yellow(),
+            abi_operands[2].blue(),
         );
     }
     let fields = [
@@ -153,17 +198,25 @@ fn format_i_type(d: &EncodedInstruction, i: &IType) -> (String, String, String) 
         format!("{:07b}", i.opcode()).red().to_string(),
     ];
     let bits = fields.join(" ");
-    return (instr, bits, hex);
+    return (instr, abi_instr, bits, hex);
 }
 
-fn format_s_type(d: &EncodedInstruction, s: &SType) -> (String, String, String) {
+fn format_s_type(d: &EncodedInstruction, s: &SType) -> (String, String, String, String) {
     let operands = &d.operands;
+    let abi_operands = operands_to_abi(operands);
     let instr = format!(
         "{} {}, {}({})",
         d.mnemonic.red().bold(),
         operands[0].green(),
         operands[1].blue(),
         operands[2].yellow(),
+    );
+    let abi_instr = format!(
+        "{} {}, {}({})",
+        d.mnemonic.red().bold(),
+        abi_operands[0].green(),
+        abi_operands[1].blue(),
+        abi_operands[2].yellow(),
     );
     let fields = [
         format!("{:07b}", s.imm11_5()).blue().to_string(),
@@ -175,17 +228,25 @@ fn format_s_type(d: &EncodedInstruction, s: &SType) -> (String, String, String) 
     ];
     let bits = fields.join(" ");
     let hex = format!("0x{:08x}", s.0).bold().to_string();
-    return (instr, bits, hex);
+    return (instr, abi_instr, bits, hex);
 }
 
-fn format_b_type(d: &EncodedInstruction, b: &BType) -> (String, String, String) {
+fn format_b_type(d: &EncodedInstruction, b: &BType) -> (String, String, String, String) {
     let operands = &d.operands;
+    let abi_operands = operands_to_abi(operands);
     let instr = format!(
         "{} {}, {}, {}",
         d.mnemonic.red().bold(),
         operands[0].green(),
         operands[1].yellow(),
         operands[2].blue(),
+    );
+    let abi_instr = format!(
+        "{} {}, {}, {}",
+        d.mnemonic.red().bold(),
+        abi_operands[0].green(),
+        abi_operands[1].yellow(),
+        abi_operands[2].blue(),
     );
     let fields = [
         format!("{:01b}", b.imm12() as u32).blue().to_string(),
@@ -199,16 +260,23 @@ fn format_b_type(d: &EncodedInstruction, b: &BType) -> (String, String, String) 
     ];
     let bits = fields.join(" ");
     let hex = format!("0x{:08x}", b.0).bold().to_string();
-    return (instr, bits, hex);
+    return (instr, abi_instr, bits, hex);
 }
 
-fn format_u_type(d: &EncodedInstruction, u: &UType) -> (String, String, String) {
+fn format_u_type(d: &EncodedInstruction, u: &UType) -> (String, String, String, String) {
     let operands = &d.operands;
+    let abi_operands = operands_to_abi(operands);
     let instr = format!(
         "{} {}, {}",
         d.mnemonic.red().bold(),
         operands[0].green(),
         operands[1].blue(),
+    );
+    let abi_instr = format!(
+        "{} {}, {}",
+        d.mnemonic.red().bold(),
+        abi_operands[0].green(),
+        abi_operands[1].blue(),
     );
     let fields = [
         format!("{:020b}", u.imm()).blue().to_string(),
@@ -217,16 +285,23 @@ fn format_u_type(d: &EncodedInstruction, u: &UType) -> (String, String, String) 
     ];
     let bits = fields.join(" ");
     let hex = format!("0x{:08x}", u.0).bold().to_string();
-    return (instr, bits, hex);
+    return (instr, abi_instr, bits, hex);
 }
 
-fn format_j_type(d: &EncodedInstruction, j: &JType) -> (String, String, String) {
+fn format_j_type(d: &EncodedInstruction, j: &JType) -> (String, String, String, String) {
     let operands = &d.operands;
+    let abi_operands = operands_to_abi(operands);
     let instr = format!(
         "{} {}, {}",
         d.mnemonic.red().bold(),
         operands[0].green(),
         operands[1].blue(),
+    );
+    let abi_instr = format!(
+        "{} {}, {}",
+        d.mnemonic.red().bold(),
+        abi_operands[0].green(),
+        abi_operands[1].blue(),
     );
     let fields = [
         format!("{:01b}", j.imm20() as u32).blue().to_string(),
@@ -238,11 +313,12 @@ fn format_j_type(d: &EncodedInstruction, j: &JType) -> (String, String, String) 
     ];
     let bits = fields.join(" ");
     let hex = format!("0x{:08x}", j.0).bold().to_string();
-    return (instr, bits, hex);
+    return (instr, abi_instr, bits, hex);
 }
 
-fn format_csr_type(d: &EncodedInstruction, c: &CSRType) -> (String, String, String) {
+fn format_csr_type(d: &EncodedInstruction, c: &CSRType) -> (String, String, String, String) {
     let operands = &d.operands;
+    let abi_operands = operands_to_abi(operands);
     let hex = format!("0x{:08x}", c.0).bold().to_string();
     let instr = format!(
         "{} {}, {}, {}",
@@ -250,6 +326,13 @@ fn format_csr_type(d: &EncodedInstruction, c: &CSRType) -> (String, String, Stri
         operands[0].green(),
         operands[1].blue(),
         operands[2].yellow(),
+    );
+    let abi_instr = format!(
+        "{} {}, {}, {}",
+        d.mnemonic.red().bold(),
+        abi_operands[0].green(),
+        abi_operands[1].blue(),
+        abi_operands[2].yellow(),
     );
     let fields = [
         format!("{:012b}", c.csr()).blue().to_string(),
@@ -259,7 +342,7 @@ fn format_csr_type(d: &EncodedInstruction, c: &CSRType) -> (String, String, Stri
         format!("{:07b}", c.opcode()).red().to_string(),
     ];
     let bits = fields.join(" ");
-    return (instr, bits, hex);
+    return (instr, abi_instr, bits, hex);
 }
 
 pub fn print_encoded_instruction(d: &EncodedInstruction) {
@@ -274,6 +357,7 @@ pub fn print_encoded_instruction(d: &EncodedInstruction) {
     };
 
     println!("ASM: {}", out.0);
-    println!("BIN: {}", out.1);
-    println!("HEX: {}\n", out.2);
+    println!("ABI: {}", out.1);
+    println!("BIN: {}", out.2);
+    println!("HEX: {}\n", out.3);
 }
