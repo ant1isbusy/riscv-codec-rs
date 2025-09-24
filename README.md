@@ -19,4 +19,3 @@ rv-codec
 - add usage examples
 - add unit tests
 - add more instructions
-- add ABI support
