@@ -9,6 +9,10 @@ Using cargo:
 ```sh
 cargo install --git https://github.com/ant1isbusy/riscv-codec-rs
 ```
+To use, call:
+```sh
+rv-codec
+```
 
 ##### TODO
 - create --tui and --cli options
