@@ -1,3 +1,4 @@
+use crate::util::*;
 use bitfield::bitfield;
 use colored::*;
 
@@ -99,27 +100,6 @@ pub struct EncodedInstruction {
     pub instr: Instruction,
     pub mnemonic: String,
     pub operands: Vec<String>,
-}
-
-const ABI_NAMES: [&str; 32] = [
-    "zero", "ra", "sp", "gp", "tp", "t0", "t1", "t2", "s0", "s1", "a0", "a1", "a2", "a3", "a4",
-    "a5", "a6", "a7", "s2", "s3", "s4", "s5", "s6", "s7", "s8", "s9", "s10", "s11", "t3", "t4",
-    "t5", "t6",
-];
-
-fn operand_to_abi(op: &str) -> String {
-    if let Some(stripped) = op.strip_prefix('x') {
-        if let Ok(idx) = stripped.parse::<usize>() {
-            if idx < ABI_NAMES.len() {
-                return ABI_NAMES[idx].to_string();
-            }
-        }
-    }
-    op.to_string()
-}
-
-fn operands_to_abi(ops: &[String]) -> Vec<String> {
-    ops.iter().map(|o| operand_to_abi(o)).collect()
 }
 
 fn format_r_type(d: &EncodedInstruction, r: &RType) -> (String, String, String, String) {

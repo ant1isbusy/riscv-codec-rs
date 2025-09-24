@@ -2,7 +2,7 @@ use crate::error::{Error, Result};
 use crate::format::{
     BType, CSRType, EncodedInstruction, IType, Instruction, JType, RType, SType, UType,
 };
-use crate::util;
+use crate::util::{abis_to_operands, parse_immediate, parse_reg};
 
 pub fn encode(instr_string: &str) -> Result<EncodedInstruction> {
     let tokens: Vec<&str> = instr_string
@@ -15,19 +15,21 @@ pub fn encode(instr_string: &str) -> Result<EncodedInstruction> {
     }
 
     let mnemonic = tokens[0].to_lowercase();
-    let operands = tokens[1..]
+
+    let raw_operands = tokens[1..]
         .iter()
         .map(|s| s.to_string())
         .collect::<Vec<_>>();
+    let operands = abis_to_operands(&raw_operands);
 
     let instr = match mnemonic.as_str() {
         "add" | "sub" | "sll" | "slt" | "sltu" | "xor" | "srl" | "sra" | "or" | "and" => {
             if operands.len() != 3 {
                 return Err(Error::InvalidFormat);
             }
-            let rd = util::parse_reg(&operands[0])?;
-            let rs1 = util::parse_reg(&operands[1])?;
-            let rs2 = util::parse_reg(&operands[2])?;
+            let rd = parse_reg(&operands[0])?;
+            let rs1 = parse_reg(&operands[1])?;
+            let rs2 = parse_reg(&operands[2])?;
             let (funct3, funct7) = match mnemonic.as_str() {
                 "add" => (0x0, 0x00),
                 "sub" => (0x0, 0x20),
@@ -59,15 +61,15 @@ pub fn encode(instr_string: &str) -> Result<EncodedInstruction> {
             if operands.len() != 3 {
                 return Err(Error::InvalidFormat);
             }
-            let rd = util::parse_reg(&operands[0])?;
+            let rd = parse_reg(&operands[0])?;
             let rs1: u32;
             let mut imm: i32;
             if ["lb", "lh", "lw", "lbu", "lhu", "jalr"].contains(&mnemonic.as_str()) {
-                imm = util::parse_immediate(&operands[1])?;
-                rs1 = util::parse_reg(&operands[2])?;
+                imm = parse_immediate(&operands[1])?;
+                rs1 = parse_reg(&operands[2])?;
             } else {
-                imm = util::parse_immediate(&operands[2])?;
-                rs1 = util::parse_reg(&operands[1])?;
+                imm = parse_immediate(&operands[2])?;
+                rs1 = parse_reg(&operands[1])?;
             }
 
             // uimm variant dont check range
@@ -122,9 +124,9 @@ pub fn encode(instr_string: &str) -> Result<EncodedInstruction> {
             if operands.len() != 3 {
                 return Err(Error::InvalidFormat);
             }
-            let rs2 = util::parse_reg(&operands[0])?;
-            let imm = util::parse_immediate(&operands[1])?;
-            let rs1 = util::parse_reg(&operands[2])?;
+            let rs2 = parse_reg(&operands[0])?;
+            let imm = parse_immediate(&operands[1])?;
+            let rs1 = parse_reg(&operands[2])?;
 
             if imm < -2048 || imm > 2047 {
                 return Err(Error::ImmediateOutOfRange);
@@ -152,9 +154,9 @@ pub fn encode(instr_string: &str) -> Result<EncodedInstruction> {
             if operands.len() != 3 {
                 return Err(Error::InvalidFormat);
             }
-            let rs1 = util::parse_reg(&operands[0])?;
-            let rs2 = util::parse_reg(&operands[1])?;
-            let imm = util::parse_immediate(&operands[2])?;
+            let rs1 = parse_reg(&operands[0])?;
+            let rs2 = parse_reg(&operands[1])?;
+            let imm = parse_immediate(&operands[2])?;
 
             if imm < -4096 || imm > 4094 {
                 return Err(Error::ImmediateOutOfRange);
@@ -190,8 +192,8 @@ pub fn encode(instr_string: &str) -> Result<EncodedInstruction> {
             if operands.len() != 2 {
                 return Err(Error::InvalidFormat);
             }
-            let rd = util::parse_reg(&operands[0])?;
-            let imm = util::parse_immediate(&operands[1])?;
+            let rd = parse_reg(&operands[0])?;
+            let imm = parse_immediate(&operands[1])?;
             if imm < -524288 || imm > 524287 {
                 return Err(Error::ImmediateOutOfRange);
             }
@@ -211,8 +213,8 @@ pub fn encode(instr_string: &str) -> Result<EncodedInstruction> {
             if operands.len() != 2 {
                 return Err(Error::InvalidFormat);
             }
-            let rd = util::parse_reg(&operands[0])?;
-            let imm = util::parse_immediate(&operands[1])?;
+            let rd = parse_reg(&operands[0])?;
+            let imm = parse_immediate(&operands[1])?;
             if imm < -1048576 || imm > 1048574 {
                 return Err(Error::ImmediateOutOfRange);
             }
@@ -233,18 +235,18 @@ pub fn encode(instr_string: &str) -> Result<EncodedInstruction> {
             if operands.len() != 3 {
                 return Err(Error::InvalidFormat);
             }
-            let rd = util::parse_reg(&operands[0])?;
-            let csr = util::parse_immediate(&operands[1])? as u32;
+            let rd = parse_reg(&operands[0])?;
+            let csr = parse_immediate(&operands[1])? as u32;
             if csr > 0xfff {
                 return Err(Error::ImmediateOutOfRange);
             }
             let rs1: u32;
             let is_imm: bool;
             if ["csrrwi", "csrrsi", "csrrci"].contains(&mnemonic.as_str()) {
-                rs1 = util::parse_immediate(&operands[2])? as u32;
+                rs1 = parse_immediate(&operands[2])? as u32;
                 is_imm = true;
             } else {
-                rs1 = util::parse_reg(&operands[2])?;
+                rs1 = parse_reg(&operands[2])?;
                 is_imm = false;
             }
             if is_imm && (rs1 > 31) {
