@@ -1,3 +1,4 @@
+use std::env;
 use std::io::{self, Write};
 
 mod decoder;
@@ -6,9 +7,8 @@ mod error;
 mod format;
 mod util;
 
-fn main() {
+pub fn run_cli() {
     let mut input = String::new();
-
     loop {
         print!("Instruction: ");
         io::stdout().flush().unwrap();
@@ -42,5 +42,15 @@ fn main() {
                 Err(e) => println!("Error encoding instruction: {:?}", e),
             }
         }
+    }
+}
+
+fn main() {
+    let cli = env::args().any(|arg| arg == "--cli");
+    if cli {
+        run_cli();
+        return;
+    } else {
+        println!("TUI is WIP");
     }
 }
