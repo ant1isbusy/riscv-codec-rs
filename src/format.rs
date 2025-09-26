@@ -341,3 +341,20 @@ pub fn print_encoded_instruction(d: &EncodedInstruction) {
     println!("BIN: {}", out.2);
     println!("HEX: {}\n", out.3);
 }
+
+pub fn encode_instruction_as_string(d: &EncodedInstruction) -> String {
+    let out = match &d.instr {
+        Instruction::RType(r) => format_r_type(d, r),
+        Instruction::IType(i) => format_i_type(d, i),
+        Instruction::SType(s) => format_s_type(d, s),
+        Instruction::BType(b) => format_b_type(d, b),
+        Instruction::UType(u) => format_u_type(d, u),
+        Instruction::JType(j) => format_j_type(d, j),
+        Instruction::CSRType(c) => format_csr_type(d, c),
+    };
+
+    format!(
+        "ASM: {:<20}\nABI: {:<20}\nBIN: {:<40}\nHEX: {}",
+        out.0, out.1, out.2, out.3
+    )
+}
