@@ -5,6 +5,7 @@ mod decoder;
 mod encoder;
 mod error;
 mod format;
+mod tui;
 mod util;
 
 pub fn run_cli() {
@@ -51,6 +52,6 @@ fn main() {
         run_cli();
         return;
     } else {
-        println!("TUI is WIP");
+        tui::run_tui();
     }
 }
