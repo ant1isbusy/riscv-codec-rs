@@ -1,11 +1,9 @@
-use std::env;
 use std::io::{self, Write};
 
 mod decoder;
 mod encoder;
 mod error;
 mod format;
-mod tui;
 mod util;
 
 pub fn run_cli() {
@@ -47,11 +45,5 @@ pub fn run_cli() {
 }
 
 fn main() {
-    let cli = env::args().any(|arg| arg == "--cli");
-    if cli {
-        run_cli();
-        return;
-    } else {
-        tui::run_tui();
-    }
+    run_cli()
 }
