@@ -322,7 +322,7 @@ fn format_csr_type(d: &EncodedInstruction, c: &CSRType) -> (String, String, Stri
         format!("{:07b}", c.opcode()).red().to_string(),
     ];
     let bits = fields.join(" ");
-    return (instr, abi_instr, bits, hex);
+    (instr, abi_instr, bits, hex)
 }
 
 pub fn print_encoded_instruction(d: &EncodedInstruction) {
@@ -341,4 +341,3 @@ pub fn print_encoded_instruction(d: &EncodedInstruction) {
     println!("BIN: {}", out.2);
     println!("HEX: {}\n", out.3);
 }
-
