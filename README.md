@@ -20,5 +20,5 @@ rv-codec
 
 ##### TODO
 
-- add more instructions
+- add more instructions: fence, ecall, ebreak missing for RV32I, then add RV32M and RV64I: https://msyksphinz-self.github.io/riscv-isadoc
 - add verbose option which shows how register fields are arranged.
