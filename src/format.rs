@@ -96,6 +96,17 @@ bitfield! {
     pub opcode, set_opcode: 6, 0;
 }
 
+bitfield! {
+    #[derive(Clone, Copy)]
+    pub struct FenceType(u32);
+    impl Debug;
+    pub pred, set_pred: 31, 24;
+    pub succ, set_succ: 23, 20;
+    pub funct3, set_funct3: 14, 12;
+    pub rd, set_rd: 11, 7;
+    pub opcode, set_opcode: 6, 0;
+}
+
 pub struct EncodedInstruction {
     pub instr: Instruction,
     pub mnemonic: String,
