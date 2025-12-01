@@ -201,10 +201,10 @@ pub fn decode(instr: u32) -> Result<EncodedInstruction> {
             };
             (mnemonic.to_string(), operands, Instruction::CSRType(c))
         }
-        0b0001111 => {
+/*         0b0001111 => {
             // FENCE 
             
-        }
+        } */
         _ => return Err(Error::InvalidOpcode),
     };
 
